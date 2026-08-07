@@ -9,7 +9,6 @@ import {
 } from "react";
 import type {
   DisciplineState,
-  Difficulty,
   Sector,
   SectorColor,
   Segment,
@@ -38,38 +37,6 @@ export const SECTOR_COLORS: SectorColor[] = [
 
 export const SECTOR_ICONS = ["◆", "▲", "●", "■", "★", "✦", "❖", "▮"];
 
-export const DIFFICULTY_XP: Record<Difficulty, number> = {
-  easy: 10,
-  normal: 25,
-  hard: 50,
-};
-
-export const SUBTASK_XP = 5;
-
-export function taskXp(task: Task): number {
-  return DIFFICULTY_XP[task.difficulty] + task.subtasks.length * SUBTASK_XP;
-}
-
-export function levelForXp(xp: number): number {
-  return Math.floor(Math.sqrt(Math.max(0, xp) / 50)) + 1;
-}
-
-export function xpForLevel(level: number): number {
-  return 50 * Math.pow(level - 1, 2);
-}
-
-export function levelProgress(xp: number) {
-  const level = levelForXp(xp);
-  const floor = xpForLevel(level);
-  const ceil = xpForLevel(level + 1);
-  return {
-    level,
-    into: xp - floor,
-    span: ceil - floor,
-    pct: Math.min(100, Math.round(((xp - floor) / (ceil - floor)) * 100)),
-  };
-}
-
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 function seed(): DisciplineState {
@@ -93,7 +60,6 @@ function seed(): DisciplineState {
       segmentId: undefined,
       timeline: "day",
       date: today,
-      difficulty: "normal",
       recurrence: "daily",
       subtasks: [],
       done: false,
@@ -107,7 +73,6 @@ function seed(): DisciplineState {
       segmentId: "g-thesis",
       timeline: "day",
       date: today,
-      difficulty: "hard",
       recurrence: "none",
       subtasks: [
         { id: uid(), title: "Outline methodology chapter", done: false },
@@ -124,7 +89,6 @@ function seed(): DisciplineState {
       timeline: "week",
       date: today,
       dueTime: "16:00",
-      difficulty: "hard",
       recurrence: "none",
       subtasks: [{ id: uid(), title: "Export CSV for finance", done: false }],
       done: false,
@@ -136,7 +100,6 @@ function seed(): DisciplineState {
       sectorId: "s-personal",
       timeline: "month",
       date: today,
-      difficulty: "easy",
       recurrence: "none",
       subtasks: [],
       done: false,
@@ -147,13 +110,34 @@ function seed(): DisciplineState {
     sectors,
     segments,
     tasks,
-    stats: { xp: 0, streak: 0, longestStreak: 0, lastCompletionDate: null },
+    stats: { streak: 0, longestStreak: 0, lastCompletionDate: null, completedCount: 0 },
     userName: "there",
   };
 }
 
+/** Migrate older saved shapes (XP-era) into the current one. */
+function migrate(raw: DisciplineState): DisciplineState {
+  const s = raw.stats ?? ({} as DisciplineState["stats"]);
+  return {
+    sectors: raw.sectors ?? [],
+    segments: raw.segments ?? [],
+    tasks: (raw.tasks ?? []).map((t) => ({ ...t, subtasks: t.subtasks ?? [] })),
+    stats: {
+      streak: s.streak ?? 0,
+      longestStreak: s.longestStreak ?? 0,
+      lastCompletionDate: s.lastCompletionDate ?? null,
+      completedCount:
+        typeof s.completedCount === "number"
+          ? s.completedCount
+          : (raw.tasks ?? []).filter((t) => t.done).length,
+    },
+    userName: raw.userName ?? "there",
+  };
+}
+
 /** Roll recurring tasks forward into the current period. */
-function normalize(state: DisciplineState): DisciplineState {
+function normalize(input: DisciplineState): DisciplineState {
+  const state = migrate(input);
   const today = todayISO();
   let changed = false;
   const tasks = state.tasks.map((t) => {
@@ -198,7 +182,6 @@ interface Ctx extends DisciplineState {
   addSegment: (sectorId: string, name: string) => void;
   deleteSegment: (id: string) => void;
   setUserName: (name: string) => void;
-  lastReward: { xp: number; perfectDay: boolean; key: number } | null;
 }
 
 export interface NewTaskInput {
@@ -209,7 +192,6 @@ export interface NewTaskInput {
   timeline: Timeline;
   date: string;
   dueTime?: string | undefined;
-  difficulty: Difficulty;
   recurrence: Recurrence;
   subtasks: string[];
 }
@@ -223,7 +205,6 @@ export function DisciplineProvider({ children }: { children: ReactNode }) {
   const userId = user?.id ?? null;
   const [state, setState] = useState<DisciplineState>(() => seed());
   const [ready, setReady] = useState(false);
-  const [lastReward, setLastReward] = useState<Ctx["lastReward"]>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -246,17 +227,21 @@ export function DisciplineProvider({ children }: { children: ReactNode }) {
     }
   }, [state, ready, userId]);
 
-  const awardXp = useCallback((s: DisciplineState, amount: number): DisciplineState => {
-    const today = todayISO();
-    const stats = { ...s.stats };
-    stats.xp = Math.max(0, stats.xp + amount);
-    if (amount > 0 && stats.lastCompletionDate !== today) {
-      stats.streak = stats.lastCompletionDate === addDays(today, -1) ? stats.streak + 1 : 1;
-      stats.lastCompletionDate = today;
-      stats.longestStreak = Math.max(stats.longestStreak, stats.streak);
-    }
-    return { ...s, stats };
-  }, []);
+  /** Track completion counts and keep the daily streak alive. */
+  const registerCompletion = useCallback(
+    (s: DisciplineState, delta: number): DisciplineState => {
+      const today = todayISO();
+      const stats = { ...s.stats };
+      stats.completedCount = Math.max(0, stats.completedCount + delta);
+      if (delta > 0 && stats.lastCompletionDate !== today) {
+        stats.streak = stats.lastCompletionDate === addDays(today, -1) ? stats.streak + 1 : 1;
+        stats.lastCompletionDate = today;
+        stats.longestStreak = Math.max(stats.longestStreak, stats.streak);
+      }
+      return { ...s, stats };
+    },
+    [],
+  );
 
   const toggleTask = useCallback(
     (id: string) => {
@@ -264,7 +249,6 @@ export function DisciplineProvider({ children }: { children: ReactNode }) {
         const task = prev.tasks.find((t) => t.id === id);
         if (!task) return prev;
         const nowDone = !task.done;
-        const gained = nowDone ? taskXp(task) : -taskXp(task);
         const tasks = prev.tasks.map((t) =>
           t.id === id
             ? {
@@ -275,17 +259,10 @@ export function DisciplineProvider({ children }: { children: ReactNode }) {
               }
             : t,
         );
-        const next = awardXp({ ...prev, tasks }, gained);
-        if (nowDone) {
-          const today = todayISO();
-          const todays = tasks.filter((t) => t.timeline === "day" && t.date === today);
-          const perfect = todays.length > 1 && todays.every((t) => t.done);
-          setLastReward({ xp: taskXp(task), perfectDay: perfect, key: Date.now() });
-        }
-        return next;
+        return registerCompletion({ ...prev, tasks }, nowDone ? 1 : -1);
       });
     },
-    [awardXp],
+    [registerCompletion],
   );
 
   const toggleSubtask = useCallback(
@@ -305,18 +282,16 @@ export function DisciplineProvider({ children }: { children: ReactNode }) {
               }
             : t,
         );
-        if (nowDone) setLastReward({ xp: SUBTASK_XP, perfectDay: false, key: Date.now() });
-        return awardXp({ ...prev, tasks }, nowDone ? SUBTASK_XP : -SUBTASK_XP);
+        return registerCompletion({ ...prev, tasks }, nowDone ? 1 : -1);
       });
     },
-    [awardXp],
+    [registerCompletion],
   );
 
   const value = useMemo<Ctx>(
     () => ({
       ...state,
       ready,
-      lastReward,
       toggleTask,
       toggleSubtask,
       addTask: (input) =>
@@ -332,7 +307,6 @@ export function DisciplineProvider({ children }: { children: ReactNode }) {
               timeline: input.timeline,
               date: input.date,
               dueTime: input.dueTime || undefined,
-              difficulty: input.difficulty,
               recurrence: input.recurrence,
               subtasks: input.subtasks
                 .map((s) => s.trim())
@@ -395,7 +369,7 @@ export function DisciplineProvider({ children }: { children: ReactNode }) {
         })),
       setUserName: (name) => setState((prev) => ({ ...prev, userName: name })),
     }),
-    [state, ready, lastReward, toggleTask, toggleSubtask],
+    [state, ready, toggleTask, toggleSubtask],
   );
 
   return <DisciplineContext.Provider value={value}>{children}</DisciplineContext.Provider>;

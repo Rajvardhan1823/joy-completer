@@ -1,5 +1,4 @@
 export type Timeline = "day" | "week" | "month";
-export type Difficulty = "easy" | "normal" | "hard";
 export type Recurrence = "none" | "daily" | "weekdays" | "weekly";
 
 export type SectorColor =
@@ -41,7 +40,6 @@ export interface Task {
   /** ISO date (yyyy-mm-dd) anchoring the task to a day/week/month */
   date: string;
   dueTime?: string | undefined;
-  difficulty: Difficulty;
   recurrence: Recurrence;
   subtasks: Subtask[];
   done: boolean;
@@ -50,10 +48,10 @@ export interface Task {
 }
 
 export interface Stats {
-  xp: number;
   streak: number;
   longestStreak: number;
   lastCompletionDate: string | null;
+  completedCount: number;
 }
 
 export interface DisciplineState {

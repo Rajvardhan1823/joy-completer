@@ -16,7 +16,7 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Sign in or create your Discipline account to track tasks, sectors, XP, levels and streaks.",
+          "Sign in or create your Discipline account to track tasks, sectors, completion and streaks.",
       },
       { property: "og:title", content: "Sign in — Discipline" },
       {

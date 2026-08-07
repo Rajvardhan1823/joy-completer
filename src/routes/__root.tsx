@@ -14,6 +14,8 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { DisciplineProvider } from "../lib/discipline/store";
 import { AuthProvider } from "../lib/auth";
 import { ThemeProvider, themeBootstrapScript } from "../lib/theme";
+import { ClientOnly } from "@tanstack/react-router";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -84,12 +86,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Discipline turns your checklist into a reward loop: flexible day, week and month planning with XP, levels, streaks and sector progress.",
+          "Discipline turns your checklist into a reward loop: flexible day, week and month planning with streaks, sector progress and completion analytics.",
       },
       { property: "og:title", content: "Discipline — Gamified Checklist Dashboard" },
       {
         property: "og:description",
-        content: "Flexible task planning with XP, levels, streaks and sector progress rings.",
+        content: "Flexible task planning with streaks and sector progress rings.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -136,11 +138,14 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-        <DisciplineProvider>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-        </DisciplineProvider>
-      </AuthProvider>
+          <DisciplineProvider>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+            <ClientOnly>
+              <Toaster position="bottom-center" />
+            </ClientOnly>
+          </DisciplineProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

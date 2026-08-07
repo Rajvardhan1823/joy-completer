@@ -1,23 +1,16 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus, TrendingUp } from "lucide-react";
+import { toast } from "sonner";
 import { AppHeader } from "@/components/discipline/AppHeader";
 import { AddTaskDialog } from "@/components/discipline/AddTaskDialog";
 import { ProgressRing, sectorColorVar } from "@/components/discipline/ProgressRing";
-import { RewardToast } from "@/components/discipline/RewardToast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  completionPct,
-  levelProgress,
-  SECTOR_COLORS,
-  SECTOR_ICONS,
-  taskXp,
-  useDiscipline,
-} from "@/lib/discipline/store";
+import { completionPct, SECTOR_COLORS, SECTOR_ICONS, useDiscipline } from "@/lib/discipline/store";
 import { addDays, isSameMonth, isSameWeek, parseISO, todayISO } from "@/lib/discipline/dates";
-import type { SectorColor, Task } from "@/lib/discipline/types";
+import type { SectorColor, Task, Timeline } from "@/lib/discipline/types";
 
 export const Route = createFileRoute("/_authenticated/analytics")({
   ssr: false,
@@ -27,12 +20,12 @@ export const Route = createFileRoute("/_authenticated/analytics")({
       {
         name: "description",
         content:
-          "See completion percentage for every sector and segment, XP earned, difficulty mix and your 7-day activity trend.",
+          "See completion percentage for every sector and segment, subtask progress and your 7-day activity trend.",
       },
       { property: "og:title", content: "Analytics — Discipline" },
       {
         property: "og:description",
-        content: "Per-sector completion percentages, XP breakdown and activity trends.",
+        content: "Per-sector completion percentages, subtask progress and activity trends.",
       },
     ],
   }),
@@ -76,9 +69,9 @@ function AnalyticsPage() {
   );
 
   const overall = completionPct(scoped);
-  const { level, into, span } = levelProgress(stats.xp);
-  const earnedXp = scoped.reduce((acc, t) => acc + (t.done ? taskXp(t) : 0), 0);
-  const potentialXp = scoped.reduce((acc, t) => acc + taskXp(t), 0);
+  const doneCount = scoped.filter((t) => t.done).length;
+  const subtasks = scoped.flatMap((t) => t.subtasks);
+  const subtasksDone = subtasks.filter((s) => s.done).length;
 
   const sectorRows = useMemo(
     () =>
@@ -90,7 +83,6 @@ function AnalyticsPage() {
             tasks: st,
             pct: completionPct(st),
             done: st.filter((t) => t.done).length,
-            xp: st.reduce((acc, t) => acc + (t.done ? taskXp(t) : 0), 0),
             segments: segments
               .filter((s) => s.sectorId === sector.id)
               .map((seg) => {
@@ -118,10 +110,10 @@ function AnalyticsPage() {
   }, [tasks, today]);
   const peak = Math.max(1, ...last7.map((d) => d.total));
 
-  const difficultyMix = (["easy", "normal", "hard"] as const).map((d) => ({
-    difficulty: d,
-    total: scoped.filter((t) => t.difficulty === d).length,
-    done: scoped.filter((t) => t.difficulty === d && t.done).length,
+  const timelineMix = (["day", "week", "month"] as Timeline[]).map((tl) => ({
+    timeline: tl,
+    total: scoped.filter((t) => t.timeline === tl).length,
+    done: scoped.filter((t) => t.timeline === tl && t.done).length,
   }));
 
   return (
@@ -170,8 +162,12 @@ function AnalyticsPage() {
               </p>
             </div>
           </div>
-          <Stat label="XP earned" value={`${earnedXp}`} sub={`of ${potentialXp} available`} />
-          <Stat label="Level" value={`${level}`} sub={`${into}/${span} XP to next`} />
+          <Stat label="Tasks done" value={`${doneCount}`} sub={`of ${scoped.length} in range`} />
+          <Stat
+            label="Subtasks done"
+            value={`${subtasksDone}`}
+            sub={`of ${subtasks.length} steps`}
+          />
           <Stat
             label="Streak"
             value={`${stats.streak}`}
@@ -189,7 +185,7 @@ function AnalyticsPage() {
             </p>
           ) : (
             <div className="mt-4 grid gap-4 lg:grid-cols-2">
-              {sectorRows.map(({ sector, tasks: st, pct, done, xp, segments: segs }) => (
+              {sectorRows.map(({ sector, tasks: st, pct, done, segments: segs }) => (
                 <article
                   key={sector.id}
                   className="rounded-xl border border-border bg-card p-5 shadow-panel"
@@ -207,7 +203,7 @@ function AnalyticsPage() {
                     <Bar pct={pct} color={sector.color} />
                   </div>
                   <p className="mt-2 text-xs text-muted-foreground">
-                    {done}/{st.length} tasks · {xp} XP earned
+                    {done}/{st.length} tasks completed
                   </p>
                   {segs.length > 0 ? (
                     <ul className="mt-4 space-y-2">
@@ -258,13 +254,13 @@ function AnalyticsPage() {
 
           <section className="rounded-xl border border-border bg-card p-5 shadow-panel">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-              Difficulty mix
+              Timeline mix
             </h2>
             <ul className="mt-5 space-y-4">
-              {difficultyMix.map((d) => (
-                <li key={d.difficulty}>
+              {timelineMix.map((d) => (
+                <li key={d.timeline}>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="capitalize">{d.difficulty}</span>
+                    <span className="capitalize">{d.timeline}</span>
                     <span className="text-muted-foreground tabular-nums">
                       {d.done}/{d.total}
                     </span>
@@ -279,7 +275,7 @@ function AnalyticsPage() {
               ))}
             </ul>
             <p className="mt-5 text-xs text-muted-foreground">
-              Harder tasks are worth more XP — easy 10, normal 25, hard 50, plus 5 per subtask.
+              Completion is measured across tasks and their subtasks in the selected range.
             </p>
           </section>
         </div>
@@ -294,6 +290,7 @@ function AnalyticsPage() {
               e.preventDefault();
               if (!name.trim()) return;
               addSector(name, color, SECTOR_ICONS[sectors.length % SECTOR_ICONS.length] ?? "◆");
+              toast.success(`Sector "${name.trim()}" added`);
               setName("");
             }}
           >
@@ -336,7 +333,6 @@ function AnalyticsPage() {
           </form>
         </section>
       </main>
-      <RewardToast />
     </div>
   );
 }
