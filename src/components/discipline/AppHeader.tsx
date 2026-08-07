@@ -1,4 +1,8 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth, displayName } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 import { Flame } from "lucide-react";
 import { levelProgress, useDiscipline } from "@/lib/discipline/store";
 import { ThemeToggle } from "./ThemeToggle";
@@ -11,6 +15,17 @@ const NAV = [
 
 export function AppHeader() {
   const { stats } = useDiscipline();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  async function handleSignOut() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  }
+
   const { level, into, span, pct } = levelProgress(stats.xp);
 
   return (
@@ -58,6 +73,16 @@ export function AppHeader() {
             </div>
           </div>
           <ThemeToggle />
+          {user ? (
+            <div className="flex items-center gap-2">
+              <span className="hidden text-sm font-medium text-muted-foreground md:inline">
+                {displayName(user)}
+              </span>
+              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                Sign out
+              </Button>
+            </div>
+          ) : null}
         </div>
       </div>
     </header>
