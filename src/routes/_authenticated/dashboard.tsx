@@ -17,7 +17,7 @@ import { formatPeriodLabel, greeting, todayISO } from "@/lib/discipline/dates";
 import { useHydrated } from "@/lib/theme";
 import type { Timeline } from "@/lib/discipline/types";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
   head: () => ({
     meta: [
