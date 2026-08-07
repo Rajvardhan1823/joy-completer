@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { DisciplineProvider } from "../lib/discipline/store";
+import { ThemeProvider, themeBootstrapScript } from "../lib/theme";
 
 function NotFoundComponent() {
   return (
@@ -116,6 +117,7 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
         <HeadContent />
       </head>
       <body>
@@ -131,10 +133,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <DisciplineProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-      </DisciplineProvider>
+      <ThemeProvider>
+        <DisciplineProvider>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </DisciplineProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
