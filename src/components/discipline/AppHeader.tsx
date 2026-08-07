@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, displayName } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Flame } from "lucide-react";
-import { levelProgress, useDiscipline } from "@/lib/discipline/store";
+import { useDiscipline } from "@/lib/discipline/store";
 import { ThemeToggle } from "./ThemeToggle";
 
 const NAV = [
@@ -25,8 +25,6 @@ export function AppHeader() {
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   }
-
-  const { level, into, span, pct } = levelProgress(stats.xp);
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
@@ -61,16 +59,11 @@ export function AppHeader() {
               day streak
             </span>
           </div>
-          <div className="flex flex-col items-end">
+          <div className="hidden flex-col items-end sm:flex">
             <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Level {level} · {into}/{span} XP
+              Completed
             </span>
-            <div className="mt-1 h-1.5 w-24 overflow-hidden rounded-full bg-muted sm:w-32">
-              <div
-                className="h-full rounded-full bg-accent transition-all duration-700"
-                style={{ width: `${pct}%` }}
-              />
-            </div>
+            <span className="text-sm font-semibold tabular-nums">{stats.completedCount}</span>
           </div>
           <ThemeToggle />
           {user ? (

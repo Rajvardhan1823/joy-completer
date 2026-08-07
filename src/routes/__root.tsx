@@ -84,12 +84,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Discipline turns your checklist into a reward loop: flexible day, week and month planning with XP, levels, streaks and sector progress.",
+          "Discipline turns your checklist into a reward loop: flexible day, week and month planning with streaks, sector progress and completion analytics.",
       },
       { property: "og:title", content: "Discipline — Gamified Checklist Dashboard" },
       {
         property: "og:description",
-        content: "Flexible task planning with XP, levels, streaks and sector progress rings.",
+        content: "Flexible task planning with streaks and sector progress rings.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

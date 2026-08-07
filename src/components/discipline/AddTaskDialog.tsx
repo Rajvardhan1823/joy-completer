@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { useDiscipline } from "@/lib/discipline/store";
 import { todayISO } from "@/lib/discipline/dates";
-import type { Difficulty, Recurrence, Timeline } from "@/lib/discipline/types";
+import type { Recurrence, Timeline } from "@/lib/discipline/types";
 
 export function AddTaskDialog({
   timeline,
@@ -40,7 +40,6 @@ export function AddTaskDialog({
   const [tl, setTl] = useState<Timeline>(timeline);
   const [date, setDate] = useState(todayISO());
   const [dueTime, setDueTime] = useState("");
-  const [difficulty, setDifficulty] = useState<Difficulty>("normal");
   const [recurrence, setRecurrence] = useState<Recurrence>("none");
   const [subtasks, setSubtasks] = useState<string[]>([]);
   const [subtaskDraft, setSubtaskDraft] = useState("");
@@ -53,7 +52,6 @@ export function AddTaskDialog({
     setNotes("");
     setSegmentId("none");
     setDueTime("");
-    setDifficulty("normal");
     setRecurrence("none");
     setSubtasks([]);
     setSubtaskDraft("");
@@ -71,7 +69,6 @@ export function AddTaskDialog({
       timeline: tl,
       date,
       dueTime,
-      difficulty,
       recurrence,
       subtasks,
     });
@@ -99,7 +96,7 @@ export function AddTaskDialog({
         <DialogHeader>
           <DialogTitle>New task</DialogTitle>
           <DialogDescription>
-            Set a timeline and sector. Bigger tasks and subtasks are worth more XP.
+            Set a timeline and sector, then break it into subtasks if it helps.
           </DialogDescription>
         </DialogHeader>
 
@@ -192,7 +189,7 @@ export function AddTaskDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="task-time">Due time</Label>
               <Input
@@ -201,19 +198,6 @@ export function AddTaskDialog({
                 value={dueTime}
                 onChange={(e) => setDueTime(e.target.value)}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="task-difficulty">Difficulty</Label>
-              <Select value={difficulty} onValueChange={(v) => setDifficulty(v as Difficulty)}>
-                <SelectTrigger id="task-difficulty">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="easy">Easy · 10 XP</SelectItem>
-                  <SelectItem value="normal">Normal · 25 XP</SelectItem>
-                  <SelectItem value="hard">Hard · 50 XP</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-recurrence">Repeats</Label>

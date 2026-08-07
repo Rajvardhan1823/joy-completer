@@ -4,15 +4,9 @@ import { Plus } from "lucide-react";
 import { AppHeader } from "@/components/discipline/AppHeader";
 import { AddTaskDialog } from "@/components/discipline/AddTaskDialog";
 import { ProgressRing } from "@/components/discipline/ProgressRing";
-import { RewardToast } from "@/components/discipline/RewardToast";
 import { TaskItem } from "@/components/discipline/TaskItem";
 import { Button } from "@/components/ui/button";
-import {
-  completionPct,
-  levelProgress,
-  tasksInPeriod,
-  useDiscipline,
-} from "@/lib/discipline/store";
+import { completionPct, tasksInPeriod, useDiscipline } from "@/lib/discipline/store";
 import { formatPeriodLabel, greeting, todayISO } from "@/lib/discipline/dates";
 import { useHydrated } from "@/lib/theme";
 import type { Timeline } from "@/lib/discipline/types";
@@ -25,12 +19,12 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       {
         name: "description",
         content:
-          "Plan tasks by day, week or month across your life sectors, and earn XP, levels and streaks for finishing them.",
+          "Plan tasks by day, week or month across your life sectors and track completion for every area.",
       },
       { property: "og:title", content: "Dashboard — Discipline" },
       {
         property: "og:description",
-        content: "Flexible task planning with XP, levels, streaks and sector progress rings.",
+        content: "Flexible task planning with sector progress rings and daily streaks.",
       },
     ],
   }),
@@ -48,7 +42,6 @@ function Dashboard() {
   const periodTasks = tasksInPeriod(tasks, timeline, today);
   const open = periodTasks.filter((t) => !t.done);
   const pct = completionPct(periodTasks);
-  const { level } = levelProgress(stats.xp);
   const nextBest = open[0];
 
   return (
@@ -141,16 +134,16 @@ function Dashboard() {
                 </div>
                 <div className="h-8 w-px bg-border" />
                 <div className="flex flex-col">
-                  <span className="text-xl font-semibold">{stats.xp}</span>
+                  <span className="text-xl font-semibold">{periodTasks.filter((t) => t.done).length}</span>
                   <span className="text-[10px] font-bold uppercase text-muted-foreground">
-                    Total XP
+                    Done this {timeline}
                   </span>
                 </div>
                 <div className="h-8 w-px bg-border" />
                 <div className="flex flex-col">
-                  <span className="text-xl font-semibold">{level}</span>
+                  <span className="text-xl font-semibold">{stats.completedCount}</span>
                   <span className="text-[10px] font-bold uppercase text-muted-foreground">
-                    Level
+                    All time
                   </span>
                 </div>
               </div>
@@ -213,7 +206,6 @@ function Dashboard() {
           </Button>
         }
       />
-      <RewardToast />
     </div>
   );
 }

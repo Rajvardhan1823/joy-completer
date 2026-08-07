@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, BarChart3, Flame, Layers, ListChecks, Trophy } from "lucide-react";
+import { ArrowRight, BarChart3, CheckCircle2, Flame, Layers, ListChecks } from "lucide-react";
 import { ThemeToggle } from "@/components/discipline/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -11,13 +11,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Discipline turns your checklist into a reward loop: day, week and month planning across life sectors with XP, levels, streaks and completion analytics.",
+          "Discipline is a clear checklist for day, week and month planning across your life sectors, with streaks and completion analytics.",
       },
       { property: "og:title", content: "Discipline — Gamified Checklist & Progress Dashboard" },
       {
         property: "og:description",
         content:
-          "Plan by day, week or month across your life sectors and earn XP, levels and streaks for finishing what matters.",
+          "Plan by day, week or month across your life sectors and track completion for everything that matters.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -38,9 +38,9 @@ const FEATURES = [
     body: "Split life into sectors — academics, fitness, work — then break each into focused segments.",
   },
   {
-    icon: Trophy,
-    title: "XP, levels & rewards",
-    body: "Every task and subtask pays XP scaled to difficulty, with instant feedback when you finish.",
+    icon: CheckCircle2,
+    title: "Subtasks that count",
+    body: "Break any task into steps — every step you tick moves the completion percentage.",
   },
   {
     icon: Flame,
@@ -81,8 +81,9 @@ function Landing() {
             Make discipline the most rewarding habit you have.
           </h1>
           <p className="mt-6 max-w-[58ch] text-pretty text-lg text-muted-foreground">
-            A checklist that pays you back. Plan across day, week and month horizons, organise work
-            into sectors, and watch XP, levels and streaks turn consistency into visible progress.
+            A checklist that shows your progress. Plan across day, week and month horizons, organise
+            work into sectors, and watch completion and streaks turn consistency into visible
+            progress.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-3">
             <Button asChild size="lg">
@@ -102,7 +103,7 @@ function Landing() {
             {[
               ["3 horizons", "Day, week and month planning in one place"],
               ["8 sectors", "Colour-threaded areas of life with progress rings"],
-              ["Live XP", "Difficulty-weighted rewards on every completion"],
+              ["Live analytics", "Completion percentage for every sector and segment"],
             ].map(([term, desc]) => (
               <div key={term}>
                 <dt className="text-2xl font-semibold tracking-tight">{term}</dt>

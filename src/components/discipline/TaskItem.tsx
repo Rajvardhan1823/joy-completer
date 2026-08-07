@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { sectorColorVar } from "./ProgressRing";
-import { useDiscipline, taskXp } from "@/lib/discipline/store";
+import { useDiscipline } from "@/lib/discipline/store";
 import type { Task, Timeline } from "@/lib/discipline/types";
 
 const RECURRENCE_LABEL: Record<Task["recurrence"], string> = {
@@ -78,12 +78,17 @@ export function TaskItem({ task }: { task: Task }) {
                 {RECURRENCE_LABEL[task.recurrence]}
               </span>
             ) : null}
-            <span
-              className="rounded px-1.5 py-0.5 font-semibold"
-              style={{ color: accent, backgroundColor: `color-mix(in oklab, ${accent} 12%, transparent)` }}
-            >
-              {task.done ? `+${taskXp(task)} XP earned` : `${taskXp(task)} XP`}
-            </span>
+            {task.subtasks.length > 0 ? (
+              <span
+                className="rounded px-1.5 py-0.5 font-semibold"
+                style={{
+                  color: accent,
+                  backgroundColor: `color-mix(in oklab, ${accent} 12%, transparent)`,
+                }}
+              >
+                {task.subtasks.filter((s) => s.done).length}/{task.subtasks.length} steps
+              </span>
+            ) : null}
           </div>
 
           {task.subtasks.length > 0 ? (

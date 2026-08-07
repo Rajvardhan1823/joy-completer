@@ -3,7 +3,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Trash2 } from "lucide-react";
 import { AppHeader } from "@/components/discipline/AppHeader";
 import { ProgressRing, sectorColorVar } from "@/components/discipline/ProgressRing";
-import { RewardToast } from "@/components/discipline/RewardToast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -220,7 +219,6 @@ function SectorsPage() {
           })}
         </div>
       </main>
-      <RewardToast />
     </div>
   );
 }
