@@ -11,7 +11,7 @@ import { completionPct, SECTOR_COLORS, SECTOR_ICONS, useDiscipline } from "@/lib
 import { isSameWeek, todayISO } from "@/lib/discipline/dates";
 import type { SectorColor } from "@/lib/discipline/types";
 
-export const Route = createFileRoute("/sectors")({
+export const Route = createFileRoute("/_authenticated/sectors")({
   ssr: false,
   head: () => ({
     meta: [

@@ -19,7 +19,7 @@ import {
 import { addDays, isSameMonth, isSameWeek, parseISO, todayISO } from "@/lib/discipline/dates";
 import type { SectorColor, Task } from "@/lib/discipline/types";
 
-export const Route = createFileRoute("/analytics")({
+export const Route = createFileRoute("/_authenticated/analytics")({
   ssr: false,
   head: () => ({
     meta: [

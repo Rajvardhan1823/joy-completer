@@ -17,8 +17,13 @@ import type {
   Timeline,
 } from "./types";
 import { addDays, isSameMonth, isSameWeek, startOfWeek, todayISO } from "./dates";
+import { useAuth } from "@/lib/auth";
 
 const STORAGE_KEY = "discipline.state.v1";
+
+function storageKey(userId: string | null) {
+  return userId ? `${STORAGE_KEY}.${userId}` : STORAGE_KEY;
+}
 
 export const SECTOR_COLORS: SectorColor[] = [
   "emerald",
@@ -214,28 +219,32 @@ type Recurrence = Task["recurrence"];
 const DisciplineContext = createContext<Ctx | null>(null);
 
 export function DisciplineProvider({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth();
+  const userId = user?.id ?? null;
   const [state, setState] = useState<DisciplineState>(() => seed());
   const [ready, setReady] = useState(false);
   const [lastReward, setLastReward] = useState<Ctx["lastReward"]>(null);
 
   useEffect(() => {
+    if (loading) return;
+    setReady(false);
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
+      const raw = window.localStorage.getItem(storageKey(userId));
       setState(normalize(raw ? (JSON.parse(raw) as DisciplineState) : seed()));
     } catch {
       setState(seed());
     }
     setReady(true);
-  }, []);
+  }, [userId, loading]);
 
   useEffect(() => {
     if (!ready) return;
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      window.localStorage.setItem(storageKey(userId), JSON.stringify(state));
     } catch {
       /* storage unavailable */
     }
-  }, [state, ready]);
+  }, [state, ready, userId]);
 
   const awardXp = useCallback((s: DisciplineState, amount: number): DisciplineState => {
     const today = todayISO();
