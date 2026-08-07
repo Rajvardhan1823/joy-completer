@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { DisciplineProvider } from "../lib/discipline/store";
 import { AuthProvider } from "../lib/auth";
 import { ThemeProvider, themeBootstrapScript } from "../lib/theme";
+import { ClientOnly } from "@tanstack/react-router";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -140,7 +141,9 @@ function RootComponent() {
           <DisciplineProvider>
             {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
             <Outlet />
-            <Toaster position="bottom-center" />
+            <ClientOnly>
+              <Toaster position="bottom-center" />
+            </ClientOnly>
           </DisciplineProvider>
         </AuthProvider>
       </ThemeProvider>
