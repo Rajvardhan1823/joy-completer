@@ -34,18 +34,18 @@ export interface Subtask {
 export interface Task {
   id: string;
   title: string;
-  notes?: string;
+  notes?: string | undefined;
   sectorId: string;
-  segmentId?: string;
+  segmentId?: string | undefined;
   timeline: Timeline;
   /** ISO date (yyyy-mm-dd) anchoring the task to a day/week/month */
   date: string;
-  dueTime?: string;
+  dueTime?: string | undefined;
   difficulty: Difficulty;
   recurrence: Recurrence;
   subtasks: Subtask[];
   done: boolean;
-  completedAt?: string;
+  completedAt?: string | undefined;
   createdAt: string;
 }
 
