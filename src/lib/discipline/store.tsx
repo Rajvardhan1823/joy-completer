@@ -400,8 +400,8 @@ export function useDiscipline(): Ctx {
 
 export function tasksInPeriod(tasks: Task[], timeline: Timeline, anchor: string): Task[] {
   return tasks.filter((t) => {
-    if (timeline === "day") return t.date === anchor;
-    if (timeline === "week") return isSameWeek(t.date, anchor);
+    if (timeline === "day") return t.timeline === "day" && t.date === anchor;
+    if (timeline === "week") return t.timeline !== "month" && isSameWeek(t.date, anchor);
     return isSameMonth(t.date, anchor);
   });
 }
