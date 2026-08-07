@@ -18,6 +18,7 @@ import { useHydrated } from "@/lib/theme";
 import type { Timeline } from "@/lib/discipline/types";
 
 export const Route = createFileRoute("/dashboard")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Dashboard — Discipline" },
