@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -60,7 +61,11 @@ export function AddTaskDialog({
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim() || !activeSector) return;
+    if (!title.trim()) return;
+    if (!activeSector) {
+      toast.error("Create a sector first, then add tasks to it.");
+      return;
+    }
     addTask({
       title,
       notes,
@@ -72,6 +77,7 @@ export function AddTaskDialog({
       recurrence,
       subtasks,
     });
+    toast.success(`"${title.trim()}" added`);
     reset();
     setOpen(false);
   }
