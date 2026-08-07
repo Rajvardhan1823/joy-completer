@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BarChart3, Flame, Layers, ListChecks, Trophy } from "lucide-react";
 import { ThemeToggle } from "@/components/discipline/ThemeToggle";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -54,6 +55,9 @@ const FEATURES = [
 ];
 
 function Landing() {
+  const { user } = useAuth();
+  const ctaLabel = user ? "Open dashboard" : "Sign in";
+
   return (
     <div className="min-h-dvh bg-background">
       <header className="border-b border-border">
@@ -62,7 +66,7 @@ function Landing() {
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <Button asChild size="sm">
-              <Link to="/dashboard">Open dashboard</Link>
+              <Link to={user ? "/dashboard" : "/auth"}>{ctaLabel}</Link>
             </Button>
           </div>
         </div>
@@ -82,13 +86,15 @@ function Landing() {
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-3">
             <Button asChild size="lg">
-              <Link to="/dashboard">
-                Start tracking
+              <Link to={user ? "/dashboard" : "/auth"}>
+                {user ? "Go to dashboard" : "Create your account"}
                 <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Link to="/analytics">See analytics</Link>
+              <Link to={user ? "/analytics" : "/auth"}>
+                {user ? "See analytics" : "Sign in"}
+              </Link>
             </Button>
           </div>
 
@@ -132,8 +138,8 @@ function Landing() {
           </h2>
           <div className="mt-8">
             <Button asChild size="lg">
-              <Link to="/dashboard">
-                Open the dashboard
+              <Link to={user ? "/dashboard" : "/auth"}>
+                {user ? "Open the dashboard" : "Get started free"}
                 <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
             </Button>
