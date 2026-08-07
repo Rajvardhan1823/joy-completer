@@ -1,216 +1,151 @@
-import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
-import { AppHeader } from "@/components/discipline/AppHeader";
-import { AddTaskDialog } from "@/components/discipline/AddTaskDialog";
-import { ProgressRing } from "@/components/discipline/ProgressRing";
-import { RewardToast } from "@/components/discipline/RewardToast";
-import { TaskItem } from "@/components/discipline/TaskItem";
+import { ArrowRight, BarChart3, Flame, Layers, ListChecks, Trophy } from "lucide-react";
+import { ThemeToggle } from "@/components/discipline/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import {
-  completionPct,
-  levelProgress,
-  tasksInPeriod,
-  useDiscipline,
-} from "@/lib/discipline/store";
-import { formatPeriodLabel, greeting, todayISO } from "@/lib/discipline/dates";
-import type { Timeline } from "@/lib/discipline/types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Discipline — Gamified Checklist Dashboard" },
+      { title: "Discipline — Gamified Checklist & Progress Dashboard" },
       {
         name: "description",
         content:
-          "Plan tasks by day, week or month across your life sectors, and earn XP, levels and streaks for finishing them.",
+          "Discipline turns your checklist into a reward loop: day, week and month planning across life sectors with XP, levels, streaks and completion analytics.",
       },
-      { property: "og:title", content: "Discipline — Gamified Checklist Dashboard" },
+      { property: "og:title", content: "Discipline — Gamified Checklist & Progress Dashboard" },
       {
         property: "og:description",
-        content: "Flexible task planning with XP, levels, streaks and sector progress rings.",
+        content:
+          "Plan by day, week or month across your life sectors and earn XP, levels and streaks for finishing what matters.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Dashboard,
+  component: Landing,
 });
 
-const TIMELINES: Timeline[] = ["day", "week", "month"];
+const FEATURES = [
+  {
+    icon: ListChecks,
+    title: "Flexible timelines",
+    body: "Plan the same task by day, week or month and move it between horizons without losing progress.",
+  },
+  {
+    icon: Layers,
+    title: "Sectors & segments",
+    body: "Split life into sectors — academics, fitness, work — then break each into focused segments.",
+  },
+  {
+    icon: Trophy,
+    title: "XP, levels & rewards",
+    body: "Every task and subtask pays XP scaled to difficulty, with instant feedback when you finish.",
+  },
+  {
+    icon: Flame,
+    title: "Streaks that stick",
+    body: "Finish something every day to keep your streak alive — miss a day and it resets.",
+  },
+  {
+    icon: BarChart3,
+    title: "Completion analytics",
+    body: "See the completion percentage for every sector and segment, plus your 7-day trend.",
+  },
+];
 
-function Dashboard() {
-  const { tasks, sectors, stats, ready, userName } = useDiscipline();
-  const [timeline, setTimeline] = useState<Timeline>("day");
-  const today = todayISO();
-
-  const periodTasks = tasksInPeriod(tasks, timeline, today);
-  const open = periodTasks.filter((t) => !t.done);
-  const pct = completionPct(periodTasks);
-  const { level } = levelProgress(stats.xp);
-  const nextBest = open[0];
-
+function Landing() {
   return (
     <div className="min-h-dvh bg-background">
-      <AppHeader />
-
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <div className="grid grid-cols-12 gap-10">
-          <div className="col-span-12 space-y-8 lg:col-span-7">
-            <header>
-              <h1 className="text-3xl font-semibold tracking-tight text-balance">
-                {greeting()}, {userName === "there" ? "let's go" : userName}.
-              </h1>
-              <p className="mt-1 max-w-[56ch] text-pretty text-muted-foreground">
-                {ready && open.length > 0
-                  ? `${open.length} task${open.length === 1 ? "" : "s"} left this ${timeline}. ${nextBest ? `Next up: ${nextBest.title}.` : ""}`
-                  : "Nothing left here — add a task and keep the streak alive."}
-              </p>
-            </header>
-
-            <div
-              className="inline-flex items-center gap-1 rounded-lg bg-secondary p-1"
-              role="tablist"
-              aria-label="Timeline"
-            >
-              {TIMELINES.map((t) => (
-                <button
-                  key={t}
-                  role="tab"
-                  aria-selected={timeline === t}
-                  onClick={() => setTimeline(t)}
-                  className={`rounded-md px-3 py-1 text-sm font-medium capitalize transition-colors ${
-                    timeline === t
-                      ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-                  {formatPeriodLabel(today, timeline)}
-                </h2>
-                <AddTaskDialog timeline={timeline} />
-              </div>
-
-              {periodTasks.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center">
-                  <p className="font-medium">Nothing here yet</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Add your first task and start your streak.
-                  </p>
-                </div>
-              ) : (
-                <ul className="divide-y divide-border border-y border-border">
-                  {[...periodTasks]
-                    .sort((a, b) => Number(a.done) - Number(b.done))
-                    .map((task) => (
-                      <TaskItem key={task.id} task={task} />
-                    ))}
-                </ul>
-              )}
-            </section>
-          </div>
-
-          <div className="col-span-12 space-y-10 lg:col-span-5">
-            <div className="flex flex-col items-center rounded-xl border border-border bg-card p-8 text-center shadow-panel">
-              <ProgressRing
-                value={pct}
-                size={160}
-                stroke={8}
-                color="emerald"
-                label={`${pct}% of this ${timeline} complete`}
-              >
-                <span className="text-3xl font-semibold leading-none tracking-tight">{pct}%</span>
-                <span className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                  {timeline} goal
-                </span>
-              </ProgressRing>
-              <div className="mt-6 flex items-center gap-4">
-                <div className="flex flex-col">
-                  <span className="text-xl font-semibold">{stats.streak}</span>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
-                    Day streak
-                  </span>
-                </div>
-                <div className="h-8 w-px bg-border" />
-                <div className="flex flex-col">
-                  <span className="text-xl font-semibold">{stats.xp}</span>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
-                    Total XP
-                  </span>
-                </div>
-                <div className="h-8 w-px bg-border" />
-                <div className="flex flex-col">
-                  <span className="text-xl font-semibold">{level}</span>
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground">
-                    Level
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-                  Active sectors
-                </h2>
-                <Link to="/sectors" className="text-xs font-medium text-accent hover:underline">
-                  Manage
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {sectors.map((sector) => {
-                  const st = periodTasks.filter((t) => t.sectorId === sector.id);
-                  const sp = completionPct(st);
-                  return (
-                    <div
-                      key={sector.id}
-                      className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 shadow-panel"
-                    >
-                      <ProgressRing
-                        value={sp}
-                        size={48}
-                        stroke={10}
-                        color={sector.color}
-                        label={`${sector.name} ${sp}% complete`}
-                      />
-                      <div className="min-w-0">
-                        <h3 className="truncate text-sm font-semibold">
-                          <span aria-hidden="true" className="mr-1">
-                            {sector.icon}
-                          </span>
-                          {sector.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {st.length === 0 ? "No tasks this period" : `${sp}% complete`}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
+      <header className="border-b border-border">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
+          <span className="text-lg font-semibold tracking-tight">Discipline</span>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Button asChild size="sm">
+              <Link to="/dashboard">Open dashboard</Link>
+            </Button>
           </div>
         </div>
+      </header>
+
+      <main>
+        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-accent">
+            Precision productivity
+          </p>
+          <h1 className="mt-4 max-w-[18ch] text-balance text-5xl font-semibold tracking-tight sm:text-6xl">
+            Make discipline the most rewarding habit you have.
+          </h1>
+          <p className="mt-6 max-w-[58ch] text-pretty text-lg text-muted-foreground">
+            A checklist that pays you back. Plan across day, week and month horizons, organise work
+            into sectors, and watch XP, levels and streaks turn consistency into visible progress.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center gap-3">
+            <Button asChild size="lg">
+              <Link to="/dashboard">
+                Start tracking
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link to="/analytics">See analytics</Link>
+            </Button>
+          </div>
+
+          <dl className="mt-16 grid gap-6 border-t border-border pt-8 sm:grid-cols-3">
+            {[
+              ["3 horizons", "Day, week and month planning in one place"],
+              ["8 sectors", "Colour-threaded areas of life with progress rings"],
+              ["Live XP", "Difficulty-weighted rewards on every completion"],
+            ].map(([term, desc]) => (
+              <div key={term}>
+                <dt className="text-2xl font-semibold tracking-tight">{term}</dt>
+                <dd className="mt-1 text-sm text-muted-foreground">{desc}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <section className="border-y border-border bg-card/50">
+          <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+              Built for momentum
+            </h2>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {FEATURES.map((f) => (
+                <article
+                  key={f.title}
+                  className="rounded-xl border border-border bg-card p-6 shadow-panel"
+                >
+                  <f.icon className="size-5 text-accent" aria-hidden="true" />
+                  <h3 className="mt-4 text-base font-semibold">{f.title}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">{f.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6">
+          <h2 className="text-balance text-3xl font-semibold tracking-tight">
+            Your streak starts with one checked box.
+          </h2>
+          <div className="mt-8">
+            <Button asChild size="lg">
+              <Link to="/dashboard">
+                Open the dashboard
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+        </section>
       </main>
 
-      <AddTaskDialog
-        timeline={timeline}
-        trigger={
-          <Button
-            size="icon"
-            aria-label="Quick add task"
-            className="fixed bottom-8 right-8 size-14 rounded-2xl shadow-panel"
-          >
-            <Plus className="size-6" />
-          </Button>
-        }
-      />
-      <RewardToast />
+      <footer className="border-t border-border">
+        <div className="mx-auto max-w-6xl px-4 py-8 text-sm text-muted-foreground sm:px-6">
+          Discipline — a local-first gamified checklist.
+        </div>
+      </footer>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { isSameWeek, todayISO } from "@/lib/discipline/dates";
 import type { SectorColor } from "@/lib/discipline/types";
 
 export const Route = createFileRoute("/sectors")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "My Sectors — Discipline" },
