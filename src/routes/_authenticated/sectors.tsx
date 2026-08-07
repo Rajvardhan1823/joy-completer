@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { AppHeader } from "@/components/discipline/AppHeader";
 import { ProgressRing, sectorColorVar } from "@/components/discipline/ProgressRing";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,7 @@ function SectorsPage() {
             e.preventDefault();
             if (!name.trim()) return;
             addSector(name, color, icon);
+            toast.success(`Sector "${name.trim()}" added`);
             setName("");
           }}
         >
@@ -198,6 +200,7 @@ function SectorsPage() {
                     const draft = segmentDrafts[sector.id]?.trim();
                     if (!draft) return;
                     addSegment(sector.id, draft);
+                    toast.success(`Segment "${draft}" added to ${sector.name}`);
                     setSegmentDrafts({ ...segmentDrafts, [sector.id]: "" });
                   }}
                 >

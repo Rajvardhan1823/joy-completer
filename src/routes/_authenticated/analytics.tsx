@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus, TrendingUp } from "lucide-react";
+import { toast } from "sonner";
 import { AppHeader } from "@/components/discipline/AppHeader";
 import { AddTaskDialog } from "@/components/discipline/AddTaskDialog";
 import { ProgressRing, sectorColorVar } from "@/components/discipline/ProgressRing";
@@ -289,6 +290,7 @@ function AnalyticsPage() {
               e.preventDefault();
               if (!name.trim()) return;
               addSector(name, color, SECTOR_ICONS[sectors.length % SECTOR_ICONS.length] ?? "◆");
+              toast.success(`Sector "${name.trim()}" added`);
               setName("");
             }}
           >
