@@ -198,12 +198,12 @@ interface Ctx extends DisciplineState {
 
 export interface NewTaskInput {
   title: string;
-  notes?: string;
+  notes?: string | undefined;
   sectorId: string;
-  segmentId?: string;
+  segmentId?: string | undefined;
   timeline: Timeline;
   date: string;
-  dueTime?: string;
+  dueTime?: string | undefined;
   difficulty: Difficulty;
   recurrence: Recurrence;
   subtasks: string[];
