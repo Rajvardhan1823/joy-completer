@@ -11,7 +11,7 @@ export function todayISO(): string {
 
 export function parseISO(s: string): Date {
   const [y, m, d] = s.split("-").map(Number);
-  return new Date(y, (m ?? 1) - 1, d ?? 1);
+  return new Date(y ?? 1970, (m ?? 1) - 1, d ?? 1);
 }
 
 export function addDays(s: string, n: number): string {
