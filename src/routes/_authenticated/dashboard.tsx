@@ -6,6 +6,13 @@ import { AddTaskDialog } from "@/components/discipline/AddTaskDialog";
 import { ProgressRing } from "@/components/discipline/ProgressRing";
 import { TaskItem } from "@/components/discipline/TaskItem";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { completionPct, tasksInPeriod, useDiscipline } from "@/lib/discipline/store";
 import { formatPeriodLabel, greeting, todayISO } from "@/lib/discipline/dates";
 import { useHydrated } from "@/lib/theme";
@@ -36,10 +43,13 @@ const TIMELINES: Timeline[] = ["day", "week", "month"];
 function Dashboard() {
   const { tasks, sectors, stats, ready, userName } = useDiscipline();
   const [timeline, setTimeline] = useState<Timeline>("day");
+  const [sectorFilter, setSectorFilter] = useState<string>("all");
   const today = todayISO();
   const hydrated = useHydrated();
 
-  const periodTasks = tasksInPeriod(tasks, timeline, today);
+  const periodTasks = tasksInPeriod(tasks, timeline, today).filter(
+    (t) => sectorFilter === "all" || t.sectorId === sectorFilter,
+  );
   const open = periodTasks.filter((t) => !t.done);
   const pct = completionPct(periodTasks);
   const nextBest = open[0];
@@ -85,18 +95,45 @@ function Dashboard() {
             </div>
 
             <section className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
                   {formatPeriodLabel(today, timeline)}
                 </h2>
-                <AddTaskDialog timeline={timeline} />
+                <div className="flex items-center gap-2">
+                  <Select value={sectorFilter} onValueChange={setSectorFilter}>
+                    <SelectTrigger
+                      className="h-9 w-40 text-xs"
+                      aria-label="Filter tasks by sector"
+                    >
+                      <SelectValue placeholder="All sectors" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All sectors</SelectItem>
+                      {sectors.map((sector) => (
+                        <SelectItem key={sector.id} value={sector.id}>
+                          <span className="mr-1.5" aria-hidden="true">
+                            {sector.icon}
+                          </span>
+                          {sector.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <AddTaskDialog timeline={timeline} />
+                </div>
               </div>
 
               {periodTasks.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center">
-                  <p className="font-medium">Nothing here yet</p>
+                  <p className="font-medium">
+                    {sectorFilter === "all"
+                      ? "Nothing here yet"
+                      : "No tasks for this sector"}
+                  </p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Add your first task and start your streak.
+                    {sectorFilter === "all"
+                      ? "Add your first task and start your streak."
+                      : "Choose another sector or add a task to this one."}
                   </p>
                 </div>
               ) : (
