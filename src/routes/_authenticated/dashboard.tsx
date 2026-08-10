@@ -6,6 +6,13 @@ import { AddTaskDialog } from "@/components/discipline/AddTaskDialog";
 import { ProgressRing } from "@/components/discipline/ProgressRing";
 import { TaskItem } from "@/components/discipline/TaskItem";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { completionPct, tasksInPeriod, useDiscipline } from "@/lib/discipline/store";
 import { formatPeriodLabel, greeting, todayISO } from "@/lib/discipline/dates";
 import { useHydrated } from "@/lib/theme";
