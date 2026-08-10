@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Flame } from "lucide-react";
 import { useDiscipline } from "@/lib/discipline/store";
 import { ThemeToggle } from "./ThemeToggle";
+import { Logo } from "./Logo";
 
 const NAV = [
   { to: "/dashboard", label: "Dashboard" },
@@ -30,8 +31,9 @@ export function AppHeader() {
     <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-4 sm:gap-8">
-          <Link to="/" className="text-lg font-semibold tracking-tight">
-            Discipline
+          <Link to="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+            <Logo className="size-7" />
+            <span>Discipline</span>
           </Link>
           <nav className="flex items-center gap-1 text-sm" aria-label="Main">
             {NAV.map((item) => (

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BarChart3, CheckCircle2, Flame, Layers, ListChecks } from "lucide-react";
 import { ThemeToggle } from "@/components/discipline/ThemeToggle";
+import { Logo } from "@/components/discipline/Logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 
@@ -62,7 +63,10 @@ function Landing() {
     <div className="min-h-dvh bg-background">
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-          <span className="text-lg font-semibold tracking-tight">Discipline</span>
+          <Link to="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+            <Logo className="size-7" />
+            <span>Discipline</span>
+          </Link>
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <Button asChild size="sm">
