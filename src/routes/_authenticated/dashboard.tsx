@@ -125,9 +125,15 @@ function Dashboard() {
 
               {periodTasks.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-border px-6 py-12 text-center">
-                  <p className="font-medium">Nothing here yet</p>
+                  <p className="font-medium">
+                    {sectorFilter === "all"
+                      ? "Nothing here yet"
+                      : "No tasks for this sector"}
+                  </p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Add your first task and start your streak.
+                    {sectorFilter === "all"
+                      ? "Add your first task and start your streak."
+                      : "Choose another sector or add a task to this one."}
                   </p>
                 </div>
               ) : (
