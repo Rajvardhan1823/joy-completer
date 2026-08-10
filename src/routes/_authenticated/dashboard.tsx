@@ -43,10 +43,13 @@ const TIMELINES: Timeline[] = ["day", "week", "month"];
 function Dashboard() {
   const { tasks, sectors, stats, ready, userName } = useDiscipline();
   const [timeline, setTimeline] = useState<Timeline>("day");
+  const [sectorFilter, setSectorFilter] = useState<string>("all");
   const today = todayISO();
   const hydrated = useHydrated();
 
-  const periodTasks = tasksInPeriod(tasks, timeline, today);
+  const periodTasks = tasksInPeriod(tasks, timeline, today).filter(
+    (t) => sectorFilter === "all" || t.sectorId === sectorFilter,
+  );
   const open = periodTasks.filter((t) => !t.done);
   const pct = completionPct(periodTasks);
   const nextBest = open[0];
