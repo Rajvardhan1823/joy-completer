@@ -95,11 +95,32 @@ function Dashboard() {
             </div>
 
             <section className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
                   {formatPeriodLabel(today, timeline)}
                 </h2>
-                <AddTaskDialog timeline={timeline} />
+                <div className="flex items-center gap-2">
+                  <Select value={sectorFilter} onValueChange={setSectorFilter}>
+                    <SelectTrigger
+                      className="h-9 w-40 text-xs"
+                      aria-label="Filter tasks by sector"
+                    >
+                      <SelectValue placeholder="All sectors" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All sectors</SelectItem>
+                      {sectors.map((sector) => (
+                        <SelectItem key={sector.id} value={sector.id}>
+                          <span className="mr-1.5" aria-hidden="true">
+                            {sector.icon}
+                          </span>
+                          {sector.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <AddTaskDialog timeline={timeline} />
+                </div>
               </div>
 
               {periodTasks.length === 0 ? (
