@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/discipline/ThemeToggle";
+import { Logo } from "@/components/discipline/Logo";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -101,8 +102,9 @@ function AuthPage() {
     <div className="flex min-h-dvh flex-col bg-background">
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
-          <Link to="/" className="text-lg font-semibold tracking-tight">
-            Discipline
+          <Link to="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+            <Logo className="size-7" />
+            <span>Discipline</span>
           </Link>
           <ThemeToggle />
         </div>
