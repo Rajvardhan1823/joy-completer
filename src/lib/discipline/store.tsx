@@ -76,7 +76,7 @@ function seed(): DisciplineState {
       timeline: "day",
       date: today,
       recurrence: "none",
-      priority: "medium",
+      priority: "high",
       subtasks: [
         { id: uid(), title: "Outline methodology chapter", done: false },
         { id: uid(), title: "Format bibliography", done: false },
@@ -93,7 +93,7 @@ function seed(): DisciplineState {
       date: today,
       dueTime: "16:00",
       recurrence: "none",
-      priority: "medium",
+      priority: "critical",
       subtasks: [{ id: uid(), title: "Export CSV for finance", done: false }],
       done: false,
       createdAt: today,
@@ -411,3 +411,26 @@ export function completionPct(tasks: Task[]): number {
 }
 
 export { startOfWeek };
+export const PRIORITY_ORDER: Record<Priority, number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+};
+
+export const PRIORITY_LABEL: Record<Priority, string> = {
+  critical: "Critical",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
+};
+
+/** Incomplete first, then by priority, then by due time. */
+export function sortByPriority(tasks: Task[]): Task[] {
+  return [...tasks].sort(
+    (a, b) =>
+      Number(a.done) - Number(b.done) ||
+      PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority] ||
+      (a.dueTime ?? "99:99").localeCompare(b.dueTime ?? "99:99"),
+  );
+}
