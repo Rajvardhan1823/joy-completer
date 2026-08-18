@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Clock, Plus, Repeat, Trash2 } from "lucide-react";
+import { CalendarPlus, Check, Clock, Flag, Plus, Repeat, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,8 +10,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { sectorColorVar } from "./ProgressRing";
-import { useDiscipline } from "@/lib/discipline/store";
-import type { Task, Timeline } from "@/lib/discipline/types";
+import { PRIORITY_LABEL, useDiscipline } from "@/lib/discipline/store";
+import { googleCalendarUrl } from "@/lib/discipline/calendar";
+import type { Priority, Task, Timeline } from "@/lib/discipline/types";
+
+const PRIORITY_STYLE: Record<Priority, string> = {
+  critical: "text-sector-rose bg-sector-rose/12",
+  high: "text-sector-orange bg-sector-orange/12",
+  medium: "text-sector-azure bg-sector-azure/12",
+  low: "text-muted-foreground bg-muted",
+};
 
 const RECURRENCE_LABEL: Record<Task["recurrence"], string> = {
   none: "",
@@ -21,7 +29,7 @@ const RECURRENCE_LABEL: Record<Task["recurrence"], string> = {
 };
 
 export function TaskItem({ task }: { task: Task }) {
-  const { sectors, segments, toggleTask, toggleSubtask, addSubtask, deleteTask, moveTask } =
+  const { sectors, segments, toggleTask, toggleSubtask, addSubtask, deleteTask, moveTask, updateTask } =
     useDiscipline();
   const [newSubtask, setNewSubtask] = useState("");
   const sector = sectors.find((s) => s.id === task.sectorId);
@@ -53,6 +61,12 @@ export function TaskItem({ task }: { task: Task }) {
           ) : null}
 
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <span
+              className={`flex items-center gap-1 rounded px-1.5 py-0.5 font-semibold ${PRIORITY_STYLE[task.priority]}`}
+            >
+              <Flag className="size-3" aria-hidden="true" />
+              {PRIORITY_LABEL[task.priority]}
+            </span>
             <span className="flex items-center gap-1.5">
               <span
                 aria-hidden="true"
@@ -139,6 +153,20 @@ export function TaskItem({ task }: { task: Task }) {
         </div>
 
         <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+          <Select
+            value={task.priority}
+            onValueChange={(v) => updateTask(task.id, { priority: v as Priority })}
+          >
+            <SelectTrigger className="h-8 w-24 text-xs" aria-label={`Priority for ${task.title}`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="critical">Critical</SelectItem>
+              <SelectItem value="high">High</SelectItem>
+              <SelectItem value="medium">Medium</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+            </SelectContent>
+          </Select>
           <Select value={task.timeline} onValueChange={(v) => moveTask(task.id, v as Timeline)}>
             <SelectTrigger
               className="h-8 w-24 text-xs"
@@ -152,6 +180,21 @@ export function TaskItem({ task }: { task: Task }) {
               <SelectItem value="month">Month</SelectItem>
             </SelectContent>
           </Select>
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="size-8 text-muted-foreground hover:text-foreground"
+          >
+            <a
+              href={googleCalendarUrl(task, sector)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Add ${task.title} to Google Calendar`}
+            >
+              <CalendarPlus className="size-4" />
+            </a>
+          </Button>
           <Button
             variant="ghost"
             size="icon"

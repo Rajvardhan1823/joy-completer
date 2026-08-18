@@ -14,6 +14,7 @@ import type {
   Segment,
   Task,
   Timeline,
+  Priority,
 } from "./types";
 import { addDays, isSameMonth, isSameWeek, startOfWeek, todayISO } from "./dates";
 import { useAuth } from "@/lib/auth";
@@ -61,6 +62,7 @@ function seed(): DisciplineState {
       timeline: "day",
       date: today,
       recurrence: "daily",
+      priority: "medium",
       subtasks: [],
       done: false,
       createdAt: today,
@@ -74,6 +76,7 @@ function seed(): DisciplineState {
       timeline: "day",
       date: today,
       recurrence: "none",
+      priority: "high",
       subtasks: [
         { id: uid(), title: "Outline methodology chapter", done: false },
         { id: uid(), title: "Format bibliography", done: false },
@@ -90,6 +93,7 @@ function seed(): DisciplineState {
       date: today,
       dueTime: "16:00",
       recurrence: "none",
+      priority: "critical",
       subtasks: [{ id: uid(), title: "Export CSV for finance", done: false }],
       done: false,
       createdAt: today,
@@ -101,6 +105,7 @@ function seed(): DisciplineState {
       timeline: "month",
       date: today,
       recurrence: "none",
+      priority: "medium",
       subtasks: [],
       done: false,
       createdAt: today,
@@ -121,7 +126,11 @@ function migrate(raw: DisciplineState): DisciplineState {
   return {
     sectors: raw.sectors ?? [],
     segments: raw.segments ?? [],
-    tasks: (raw.tasks ?? []).map((t) => ({ ...t, subtasks: t.subtasks ?? [] })),
+    tasks: (raw.tasks ?? []).map((t) => ({
+      ...t,
+      subtasks: t.subtasks ?? [],
+      priority: t.priority ?? "medium",
+    })),
     stats: {
       streak: s.streak ?? 0,
       longestStreak: s.longestStreak ?? 0,
@@ -193,6 +202,7 @@ export interface NewTaskInput {
   date: string;
   dueTime?: string | undefined;
   recurrence: Recurrence;
+  priority: Priority;
   subtasks: string[];
 }
 
@@ -308,6 +318,7 @@ export function DisciplineProvider({ children }: { children: ReactNode }) {
               date: input.date,
               dueTime: input.dueTime || undefined,
               recurrence: input.recurrence,
+              priority: input.priority,
               subtasks: input.subtasks
                 .map((s) => s.trim())
                 .filter(Boolean)
@@ -400,3 +411,26 @@ export function completionPct(tasks: Task[]): number {
 }
 
 export { startOfWeek };
+export const PRIORITY_ORDER: Record<Priority, number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+};
+
+export const PRIORITY_LABEL: Record<Priority, string> = {
+  critical: "Critical",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
+};
+
+/** Incomplete first, then by priority, then by due time. */
+export function sortByPriority(tasks: Task[]): Task[] {
+  return [...tasks].sort(
+    (a, b) =>
+      Number(a.done) - Number(b.done) ||
+      PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority] ||
+      (a.dueTime ?? "99:99").localeCompare(b.dueTime ?? "99:99"),
+  );
+}

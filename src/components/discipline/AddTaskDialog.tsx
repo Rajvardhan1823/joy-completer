@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { useDiscipline } from "@/lib/discipline/store";
 import { todayISO } from "@/lib/discipline/dates";
-import type { Recurrence, Timeline } from "@/lib/discipline/types";
+import type { Priority, Recurrence, Timeline } from "@/lib/discipline/types";
 
 export function AddTaskDialog({
   timeline,
@@ -42,6 +42,7 @@ export function AddTaskDialog({
   const [date, setDate] = useState(todayISO());
   const [dueTime, setDueTime] = useState("");
   const [recurrence, setRecurrence] = useState<Recurrence>("none");
+  const [priority, setPriority] = useState<Priority>("medium");
   const [subtasks, setSubtasks] = useState<string[]>([]);
   const [subtaskDraft, setSubtaskDraft] = useState("");
 
@@ -54,6 +55,7 @@ export function AddTaskDialog({
     setSegmentId("none");
     setDueTime("");
     setRecurrence("none");
+    setPriority("medium");
     setSubtasks([]);
     setSubtaskDraft("");
     setDate(todayISO());
@@ -75,6 +77,7 @@ export function AddTaskDialog({
       date,
       dueTime,
       recurrence,
+      priority,
       subtasks,
     });
     toast.success(`"${title.trim()}" added`);
@@ -219,6 +222,21 @@ export function AddTaskDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="task-priority">Priority</Label>
+            <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
+              <SelectTrigger id="task-priority">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="critical">Critical — do this first</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
