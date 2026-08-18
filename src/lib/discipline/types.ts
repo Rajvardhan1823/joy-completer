@@ -1,5 +1,6 @@
 export type Timeline = "day" | "week" | "month";
 export type Recurrence = "none" | "daily" | "weekdays" | "weekly";
+export type Priority = "low" | "medium" | "high" | "critical";
 
 export type SectorColor =
   | "emerald"
@@ -41,6 +42,7 @@ export interface Task {
   date: string;
   dueTime?: string | undefined;
   recurrence: Recurrence;
+  priority: Priority;
   subtasks: Subtask[];
   done: boolean;
   completedAt?: string | undefined;
