@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { CalendarDays, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { AppHeader } from "@/components/discipline/AppHeader";
 import { AddTaskDialog } from "@/components/discipline/AddTaskDialog";
 import { ProgressRing } from "@/components/discipline/ProgressRing";
@@ -13,10 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { completionPct, tasksInPeriod, useDiscipline } from "@/lib/discipline/store";
+import {
+  completionPct,
+  sortByPriority,
+  tasksInPeriod,
+  useDiscipline,
+} from "@/lib/discipline/store";
+import { downloadICS } from "@/lib/discipline/calendar";
 import { formatPeriodLabel, greeting, todayISO } from "@/lib/discipline/dates";
 import { useHydrated } from "@/lib/theme";
-import type { Timeline } from "@/lib/discipline/types";
+import type { Priority, Timeline } from "@/lib/discipline/types";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
@@ -44,13 +51,16 @@ function Dashboard() {
   const { tasks, sectors, stats, ready, userName } = useDiscipline();
   const [timeline, setTimeline] = useState<Timeline>("day");
   const [sectorFilter, setSectorFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const today = todayISO();
   const hydrated = useHydrated();
 
   const periodTasks = tasksInPeriod(tasks, timeline, today).filter(
-    (t) => sectorFilter === "all" || t.sectorId === sectorFilter,
+    (t) =>
+      (sectorFilter === "all" || t.sectorId === sectorFilter) &&
+      (priorityFilter === "all" || t.priority === (priorityFilter as Priority)),
   );
-  const open = periodTasks.filter((t) => !t.done);
+  const open = sortByPriority(periodTasks).filter((t) => !t.done);
   const pct = completionPct(periodTasks);
   const nextBest = open[0];
 
@@ -100,6 +110,21 @@ function Dashboard() {
                   {formatPeriodLabel(today, timeline)}
                 </h2>
                 <div className="flex items-center gap-2">
+                  <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                    <SelectTrigger
+                      className="h-9 w-36 text-xs"
+                      aria-label="Filter tasks by priority"
+                    >
+                      <SelectValue placeholder="All priorities" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All priorities</SelectItem>
+                      <SelectItem value="critical">Critical</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Select value={sectorFilter} onValueChange={setSectorFilter}>
                     <SelectTrigger
                       className="h-9 w-40 text-xs"
@@ -119,6 +144,22 @@ function Dashboard() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-9"
+                    onClick={() => {
+                      if (periodTasks.length === 0) {
+                        toast.error("Nothing to sync in this view yet.");
+                        return;
+                      }
+                      downloadICS(periodTasks, sectors, `discipline-${timeline}.ics`);
+                      toast.success("Calendar file downloaded — import it into Google, Apple or Outlook Calendar.");
+                    }}
+                  >
+                    <CalendarDays className="size-4" aria-hidden="true" />
+                    Sync calendar
+                  </Button>
                   <AddTaskDialog timeline={timeline} />
                 </div>
               </div>
@@ -138,11 +179,9 @@ function Dashboard() {
                 </div>
               ) : (
                 <ul className="divide-y divide-border border-y border-border">
-                  {[...periodTasks]
-                    .sort((a, b) => Number(a.done) - Number(b.done))
-                    .map((task) => (
-                      <TaskItem key={task.id} task={task} />
-                    ))}
+                  {sortByPriority(periodTasks).map((task) => (
+                    <TaskItem key={task.id} task={task} />
+                  ))}
                 </ul>
               )}
             </section>
